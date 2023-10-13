@@ -6,7 +6,7 @@
 #    By: davidga2 <davidga2@student.42madrid.com>   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/08/31 17:34:05 by davidga2          #+#    #+#              #
-#    Updated: 2023/09/28 20:20:00 by davidga2         ###   ########.fr        #
+#    Updated: 2023/10/12 18:53:39 by davidga2         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,9 +26,10 @@ SRC = src/pipex.c		\
 OBJS = $(SRC:%.c=%.o)
 
 SRC_BONUS = bonus/pipex_bonus.c		\
-	  		bonus/childs_bonus.c		\
+	  		bonus/childs_bonus.c	\
 	  		bonus/ft_error_bonus.c	\
-	  		bonus/ft_exec_bonus.c
+	  		bonus/ft_exec_bonus.c	\
+			bonus/heredoc_bonus.c
 OBJS_BONUS = $(SRC_BONUS:%.c=%.o)
 
 all: $(NAME)
@@ -60,4 +61,4 @@ re: fclean all
 
 rebonus: fclean bonus
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re bonus rebonus
