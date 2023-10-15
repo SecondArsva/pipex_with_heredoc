@@ -6,13 +6,14 @@
 /*   By: davidga2 <davidga2@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/10 20:52:58 by davidga2          #+#    #+#             */
-/*   Updated: 2023/10/13 03:44:08 by davidga2         ###   ########.fr       */
+/*   Updated: 2023/10/15 03:12:15 by davidga2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/pipex_bonus.h"
 
 // Documenta esto, men.  Añade protecciones al crear o borrar el heredoc, gracias vicmarti.
+//
 int	ft_heredoc(char **argv)
 {
 	int		tmp_file_fd;
@@ -39,6 +40,12 @@ int	ft_heredoc(char **argv)
 	return (tmp_file_fd);
 }
 
+// Función dedicada al primer subproceso/hijo, encargado de crear el archivo
+// temporal en el que se replicará el funcionamiento del heredoc a modo de
+// infile.
+// Se crea el proceso y se asigna el fd del archivo temporal del heredoc a
+// la variable heredoc_fd.
+// Se cierra el fd del extremo del pipe con el que no interactua.
 void	ft_heredoc_child(char **argv, char **envp, int *pipe)
 {
 	pid_t	pid;
@@ -58,6 +65,18 @@ void	ft_heredoc_child(char **argv, char **envp, int *pipe)
 	ft_wait_childs(1);
 }
 
+// Función dedicada al subproceso/hijo final.
+// Crea y gestiona el subproceso.
+// Dentro del subproceso:
+// Borra el archivo oculto dedicado al heredoc para evitar tener archivos
+// basura tras la ejecución del programa.
+// Crea (con open) un archivo en el que volcar el resultado de la ejecución
+// del programa asociado al comando introducido, o lo abre en caso de existir.
+// Cierra el extremo del pipe con el que no interactua.
+// Redirecciona los fd de entrada y salida al fd extremo del lectura del pipe
+// y el fd del outfile respectivamente.
+// Cierra los fd por los que se "dupeado".
+// Ejecuta el comando introducido mediante ft_exec.
 void	ft_outfile_child_heredoc(char **argv, char **envp, int *pipe)
 {
 	pid_t	pid;
@@ -66,8 +85,11 @@ void	ft_outfile_child_heredoc(char **argv, char **envp, int *pipe)
 	pid = ft_fork_manage();
 	if (!pid)
 	{
-		unlink("./.heredoc");
+		if (unlink("./.heredoc") == -1)
+			ft_error("Failure erasing the temporal file used in heredoc");
 		outfile_fd = open(argv[5], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		if (outfile_fd == -1)
+			ft_error("Last child failed open the outfile");
 		close(pipe[1]);
 		dup2(pipe[0], STDIN_FILENO);
 		dup2(outfile_fd, STDOUT_FILENO);
@@ -77,6 +99,12 @@ void	ft_outfile_child_heredoc(char **argv, char **envp, int *pipe)
 	}
 }
 
+// Como en el subject no se pone un ejemplo usando multi-piping, en el bonus
+// del heredoc solo uso un pipe.
+// Desde el proceso padre se crea el pipe y se llaman a las funciones que
+// ejecutarán a los hijos(subprocesos). Después se cierra el pipe,
+// no por gusto ni una buena práctica, sino porque si no lo cerramos no va.
+// Y espera a que termine la ejecución del último hijo.
 void	ft_pipex_heredoc(char **argv, char **envp)
 {
 	int	pipe[2];
