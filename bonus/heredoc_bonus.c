@@ -6,46 +6,63 @@
 /*   By: davidga2 <davidga2@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/10 20:52:58 by davidga2          #+#    #+#             */
-/*   Updated: 2023/10/15 03:12:15 by davidga2         ###   ########.fr       */
+/*   Updated: 2023/10/16 01:26:51 by davidga2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/pipex_bonus.h"
 
-// Documenta esto, men.  Añade protecciones al crear o borrar el heredoc, gracias vicmarti.
-//
-int	ft_heredoc(char **argv)
+void	ft_heredoc_write_loop(char *limiter, int heredoc_fd)
 {
-	int		tmp_file_fd;
-	char	*file_name;
-	char	*writed_line;
-	char	*limiter;
+	char *writed_line;
 
-	file_name = ".heredoc";
-	limiter = argv[2];
-	tmp_file_fd = open(file_name, O_CREAT | O_RDWR | O_TRUNC, 0644);
 	while (1)
 	{
-		ft_putstr_fd("heredoc> ", 0);
+		ft_putstr_fd("heredoc> ", STDOUT_FILENO);
 		writed_line = get_next_line(STDIN_FILENO);
 		if (!writed_line)
 			break ;
 		if (!ft_strncmp(writed_line, limiter, ft_strlen(limiter)))
+		{
+			free(writed_line);
 			break ;
-		write(tmp_file_fd, writed_line, ft_strlen(writed_line));
+		}
+		write(heredoc_fd, writed_line, ft_strlen(writed_line));
 		free(writed_line);
 	}
-	close(tmp_file_fd);
-	tmp_file_fd = open(file_name, O_RDONLY);
-	return (tmp_file_fd);
+}
+
+// Documenta esto, men.
+// Añade protecciones al crear o borrar el heredoc, gracias vicmarti.
+//
+// apped
+int	ft_heredoc(char **argv)
+{
+	int		heredoc_fd;
+	char	*limiter;
+
+	limiter = ft_strjoin(argv[2], "\n");
+	if (!limiter)
+		ft_error("Limiter processing has failed");
+	heredoc_fd = open(".heredoc", O_CREAT | O_RDWR | O_APPEND, 0644);
+	if (heredoc_fd == -1)
+		ft_error("Failure opening the temporal file used in heredoc");
+	ft_heredoc_write_loop(limiter, heredoc_fd);
+	close(heredoc_fd);
+	heredoc_fd = open(".heredoc", O_RDONLY);
+	return (heredoc_fd);
 }
 
 // Función dedicada al primer subproceso/hijo, encargado de crear el archivo
 // temporal en el que se replicará el funcionamiento del heredoc a modo de
 // infile.
-// Se crea el proceso y se asigna el fd del archivo temporal del heredoc a
-// la variable heredoc_fd.
+// Se crea el subproceso y dentro del mismo se asigna el fd del archivo
+// temporal del heredoc a la variable heredoc_fd mediante la función
+// ft_heredoc.
 // Se cierra el fd del extremo del pipe con el que no interactua.
+// Se redireccionan los fd in y out con el fd del heredoc y el extremo de
+// escritura del pipe respectivamente y después se cierran. Finalmente se
+// ejecuta el comando introducido.
 void	ft_heredoc_child(char **argv, char **envp, int *pipe)
 {
 	pid_t	pid;
