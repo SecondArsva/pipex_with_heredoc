@@ -6,7 +6,7 @@
 /*   By: davidga2 <davidga2@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/10 20:52:58 by davidga2          #+#    #+#             */
-/*   Updated: 2023/10/16 01:26:51 by davidga2         ###   ########.fr       */
+/*   Updated: 2023/10/16 01:32:18 by davidga2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ void	ft_heredoc_write_loop(char *limiter, int heredoc_fd)
 		write(heredoc_fd, writed_line, ft_strlen(writed_line));
 		free(writed_line);
 	}
+	free(limiter);
 }
 
 // Documenta esto, men.
