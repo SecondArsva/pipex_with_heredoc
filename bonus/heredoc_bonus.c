@@ -6,7 +6,7 @@
 /*   By: davidga2 <davidga2@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/10 20:52:58 by davidga2          #+#    #+#             */
-/*   Updated: 2023/10/16 01:32:18 by davidga2         ###   ########.fr       */
+/*   Updated: 2023/10/16 17:09:12 by davidga2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ int	ft_heredoc(char **argv)
 	limiter = ft_strjoin(argv[2], "\n");
 	if (!limiter)
 		ft_error("Limiter processing has failed");
-	heredoc_fd = open(".heredoc", O_CREAT | O_RDWR | O_APPEND, 0644);
+	heredoc_fd = open(".heredoc", O_CREAT | O_RDWR | O_TRUNC, 0644);
 	if (heredoc_fd == -1)
 		ft_error("Failure opening the temporal file used in heredoc");
 	ft_heredoc_write_loop(limiter, heredoc_fd);
@@ -105,7 +105,7 @@ void	ft_outfile_child_heredoc(char **argv, char **envp, int *pipe)
 	{
 		if (unlink("./.heredoc") == -1)
 			ft_error("Failure erasing the temporal file used in heredoc");
-		outfile_fd = open(argv[5], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		outfile_fd = open(argv[5], O_WRONLY | O_CREAT | O_APPEND, 0644);
 		if (outfile_fd == -1)
 			ft_error("Last child failed open the outfile");
 		close(pipe[1]);
