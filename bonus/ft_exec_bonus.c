@@ -6,7 +6,7 @@
 /*   By: davidga2 <davidga2@student.42madrid.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/15 03:05:27 by davidga2          #+#    #+#             */
-/*   Updated: 2023/10/04 05:27:05 by davidga2         ###   ########.fr       */
+/*   Updated: 2023/10/17 20:14:18 by davidga2         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ int	ft_path_type(char *cmd_argv)
 
 	path_type = 0;
 	if (ft_strncmp(cmd_argv, "/", 1) == 0 || ft_strncmp(cmd_argv, "./", 2) == 0
-		|| ft_strncmp(cmd_argv, "../", 3) == 0)
+		|| ft_strncmp(cmd_argv, "../", 3) == 0 || (ft_strchr(cmd_argv, '/')))
 		path_type = 1;
 	else
 		path_type = 2;
