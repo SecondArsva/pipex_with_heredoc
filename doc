@@ -1,0 +1,131 @@
+Archivo con los comentarios no traducidos y extremadamente largos.
+
+--- pipex_bonus.c ---
+
+int	main(int argc, char **argv, char **envp)
+// El main se encarga de llamar a una función u otra según se use
+// single-pipe o multi-pipes con ft_pipex o en su defecto el heredoc,
+// que solo usa singe-pipe según el ejemplo del subject con ft_pipe_heredoc.
+//
+// El condicional encargado de ejecutar la función dedicada al heredoc
+// verifica que el segundo argumento introducido sea solo "here_doc" y nada
+// más, por ello se pone "9", ara que comprare los carácteres del string más
+// el caracter nulo que lo cierra, es decir, "here_doc\0". En caso de recibir
+// "here_doca", por ejemplo, se ejecutaría el pipex base con el bonus del
+// multi-pipe.
+//
+// Estructura en la ejecución con un solo pipe:
+// 				"./pipex_bonus infile "cmd1" "cmd2" outfile"
+// Estructura en la ejecución del multi-pipe:
+//				"./pipex_bonus infile "cmd1" "cmd2" "cmd3" "cmd(...)" outfile"
+// Estructura de la ejecución del heredoc:
+// 				"./pipex_bonus here_doc LIMITER "cmd1" "cmd2" outfile"
+
+void	ft_pipex(char **argv, char **envp, int total_childs, int middle_childs)
+// Como en el bonus se incluye el multi-pipe, hay un nuevo subproceso hijo
+// encargado de comunicarse con dos pipes; recibiendo información de un pipe
+// y volcando el resultado de su ejecución de subproceso en otro pipe con sus
+// debidas redirecciones.
+// Siempre se usarán tantos pipes menos 1 como comandos se hayan introducido,
+// aunque realmente solo coexistirán dos pipes al mismo tiempo durante la
+// ejecución del programa en caso de introducir más de 2 comandos debido al
+// funcionamiento del hijo intermedio.
+// Por ello el proceso padre necesita declarar dos variables dedicadas a la
+// creación de los dos posibles pipes que coexistirán al mismo tiempo.
+// En caso de haber multi-piping se hará uso del hijo intermedio tantas veces
+// como hijos intermedios haya. Esto se calcula restándole 5 al número total
+// de argumentos.
+// El número total de hijos serán los argumentos menos 3.
+// En caso de necesitar multi-piping se creará el segundo pipe, se ejecutará
+// la función del hijo intermedio, se cerrará el primer pipe y el segundo
+// pipe pasará a ser el primero para que el siguiente hijo intermedio o el
+// hijo final lo traten debidamente.
+// middle_childs es el contador de hijos intermedios que han de ejecutarse.
+// cmd_count es la posición del argumento a usar como comando dentro de los
+// hijos intermedios e hijo final.
+
+void	ft_pipe_close(int *fd)
+// Función encargada de cerrar ambos extremos del pipe recibido
+// por parámetro.
+// Usada principalmente en el proceso padre y creada para
+// ahorrar líneas de código de cara a la Norma.
+
+void	ft_pipe_manage(int *fd)
+// Función para la gestión de errores en la creación de un pipe.
+// Permite ahorrar una línea a la hora de crear un pipe.
+// Recibe por parámetro los 2 fd que se usarán para su vinculación
+// y creación del pipe.
+
+void	ft_wait_childs(int total_childs)
+// Función encargada de esperar a tantos subprocesos hijos como el número
+// entero que se reciba por el parámetro de la función. "waitpid(-1, NULL, 0)"
+// espera a cualquier subproceso/hijo dentro de la totalidad de
+// subprocesos/hijos en ejecución. Solo espera a uno dentro de todo el grupo,
+// por lo que si queremos esperar a varios hijos deberá ejecutarse tantas veces
+// como hijos a esperar, de hay que esté anidada en un bucle.
+
+--- heredoc_bonus.c ---
+
+void	ft_pipex_heredoc(char **argv, char **envp)
+// Como en el subject no se pone un ejemplo usando multi-piping, en el bonus
+// del heredoc solo uso un pipe.
+// Desde el proceso padre se crea el pipe y se llaman a las funciones que
+// ejecutarán a los hijos(subprocesos). Después se cierra el pipe,
+// no por gusto ni una buena práctica, sino porque si no lo cerramos no va.
+// Y espera a que termine la ejecución del último hijo.
+
+void	ft_heredoc_child(char **argv, char **envp, int *pipe)i
+// Función dedicada al primer subproceso/hijo, encargado de crear el archivo
+// temporal en el que se replicará el funcionamiento del heredoc a modo de
+// infile.
+// Se crea el subproceso y dentro del mismo se asigna el fd del archivo
+// temporal del heredoc a la variable heredoc_fd mediante la función
+// ft_heredoc.
+// Se cierra el fd del extremo del pipe con el que no interactua.
+// Se redireccionan los fd in y out con el fd del heredoc y el extremo de
+// escritura del pipe respectivamente y después se cierran. Finalmente se
+// ejecuta el comando introducido.
+
+void	ft_outfile_child_heredoc(char **argv, char **envp, int *pipe)
+// Función dedicada al subproceso/hijo final.
+// Crea y gestiona el subproceso.
+// Dentro del subproceso:
+// Borra el archivo oculto dedicado al heredoc para evitar tener archivos
+// basura tras la ejecución del programa.
+// Crea (con open) un archivo en el que volcar el resultado de la ejecución
+// del programa asociado al comando introducido, o lo abre en caso de existir.
+// Cierra el extremo del pipe con el que no interactua.
+// Redirecciona los fd de entrada y salida al fd extremo del lectura del pipe
+// y el fd del outfile respectivamente. El fd del outfile en este caso no se
+// trunca, sino que se adjunta. En lugar de hacer el open() con O_TRUNC se usa
+// O_APPEND.
+// Cierra los fd por los que se "dupeado".
+// Ejecuta el comando introducido mediante ft_exec.
+
+int	ft_heredoc(char **argv)
+// Mediante strjoin procesamos el limitador para añadirle un salto de
+// línea ya que en el momento de la escritura con el heredoc como
+// trabajamos con gnl siempre nos devolverá una línea con su
+// breakline al final. Abrimos el fd del archivo temporal en el que
+// escribiremos y ejecutamos la función del bucle de escritura.
+// Liberamos el limitador procesado con el salto de línea ya que
+// está reservado en memoria. Y para resetear el puntero dentro del
+// archivo que usamos para el heredoc tras terminar de escribir,
+// cerramos el fd y volvemos a abrirlo de nuevo antes de retornarlo.
+
+void	ft_heredoc_write_loop(char *limiter, int heredoc_fd)
+// Función dedicada al bucle de escritura del heredoc.
+// Recibe mediante argumentos el limitador procesado con un salto de línea con
+// el que parar la escritura y el fd del archivo temporal en el que escribirimos
+// usado para el heredoc.
+// En primer lugar declaramos una variable que albergará aquello que escribamos.
+// A continuacion creamos un bucle infinito que nos permitirá tener el programa
+// esperando recibir lo que sea que escribamos. Con ft_putstr_fd mostramos en
+// cada ciclo, en cada línea del heredoc, el típoco mensaje por terminal que
+// sale al hacer uso de está propiedad. Con el gnl del STDIN capturamos lo que
+// escribamos en la terminal y con write lo escribimos en el archivo temporal.
+// En caso de no haber escrito nada y haber "matado" el proceso con "ctrl + D"
+// o haber escrito el limitador que finaliza con el heredoc,
+// terminamos el bucle. Como gnl hace reservas de memoria, aunque estemos
+// trabajando dentro de un subproceso, es una buena práctica lberar el
+// contenido cuando corresponda, por falta de uso o fin de ejecución.
