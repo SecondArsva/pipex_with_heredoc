@@ -6,7 +6,7 @@
 #    By: davidga2 <davidga2@student.42madrid.com>   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/08/31 17:34:05 by davidga2          #+#    #+#              #
-#    Updated: 2023/10/12 18:53:39 by davidga2         ###   ########.fr        #
+#    Updated: 2023/10/17 20:54:14 by davidga2         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -33,13 +33,14 @@ SRC_BONUS = bonus/pipex_bonus.c		\
 OBJS_BONUS = $(SRC_BONUS:%.c=%.o)
 
 all: $(NAME)
-bonus: $(NAME_BONUS)
+bonus: .bonus
 
 $(NAME): $(LIBFT) $(OBJS)
 	$(CC) $(SRC) $(LIBFT) -o $(NAME)
 
-$(NAME_BONUS): $(LIBFT) $(OBJS_BONUS)
-	$(CC) $(SRC_BONUS) $(LIBFT) -o $(NAME_BONUS)
+.bonus: $(LIBFT) $(OBJS_BONUS)
+	$(CC) $(SRC_BONUS) $(LIBFT) -o pipex
+	touch .bonus
 
 $(LIBFT):
 	$(MAKE) -C $(LIBFT_DIR)
@@ -51,6 +52,7 @@ clean:
 	$(RM) $(OBJS)
 	$(MAKE) clean -C $(LIBFT_DIR)
 	$(RM) $(OBJS_BONUS)
+	$(RM) .bonus
 
 fclean: clean
 	$(RM) $(NAME)
